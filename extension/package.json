@@ -1,0 +1,17 @@
+{
+  "name": "cc-mcp",
+  "version": "1.0.0",
+  "description": "AI Agent bridge for Cocos Creator — exposes editor/scene/asset/build control over a local JSON-RPC HTTP endpoint (consumed by the cocos-mcp server).",
+  "author": "DSH",
+  "main": "./main.js",
+  "editor": ">=3.8.0",
+  "package_version": 2,
+  "contributions": {
+    "scene": {
+      "script": "./scene.js"
+    }
+  },
+  "scripts": {
+    "postinstall": "echo 'cc-mcp: install this folder into your project as extensions/cc-mcp, then reload the editor.'"
+  }
+}

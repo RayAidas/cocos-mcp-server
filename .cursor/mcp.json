@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cocos": {
+      "command": "/Users/rayaidas/.nvm/versions/node/v22.23.2/bin/node",
+      "args": ["/Users/rayaidas/Project/cocos-mcp-server/mcp-server/src/index.js"]
+    }
+  }
+}
