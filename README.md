@@ -46,20 +46,23 @@ node src/index.js          # 通过 stdio 运行，等待 MCP 客户端连接
 
 ### 3. 在 AI 客户端中注册
 
-以 Claude Desktop 为例，`claude_desktop_config.json`：
+通用 MCP 配置模板（Claude Desktop / Cursor / 其他 stdio MCP 客户端通用）：
 
 ```json
 {
   "mcpServers": {
     "cocos": {
       "command": "node",
-      "args": ["/Users/rayaidas/Project/cocos-mcp-server/mcp-server/src/index.js"]
+      "args": ["<本仓库路径>/mcp-server/src/index.js"]
     }
   }
 }
 ```
 
-Cursor / VS Code / 其他客户端配置见 [docs/setup.md](docs/setup.md)。
+- 把 `<本仓库路径>` 替换为你 clone 本仓库后的**绝对路径**（在仓库根目录执行 `pwd` 查看），例如 `/Users/you/cocos-mcp-server`。
+- 若 GUI 客户端找不到 `node`（不加载 shell PATH，nvm 用户常见），用 `which node` 的输出替换 `"command"`，例如 `"/Users/you/.nvm/versions/node/v22.23.2/bin/node"`。
+- **Cursor**：把上面的 JSON 写入项目 `.cursor/mcp.json`，或通过 `Settings → MCP → Add new MCP server` 添加。
+- **Claude Desktop**：写入 `claude_desktop_config.json`；VS Code 使用顶层键 `"servers"`。各客户端完整示例见 [docs/setup.md](docs/setup.md)。
 
 ### 4. 让 AI 干活
 
