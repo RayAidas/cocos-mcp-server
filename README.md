@@ -36,13 +36,14 @@ AI 客户端（Claude / Cursor / VS Code / 任何支持 MCP 的 Agent）通过 M
 
 验证：浏览器打开 `http://127.0.0.1:32123/health`，应返回 JSON 项目信息。
 
-### 2. 启动 MCP Server（供 AI 客户端调用）
+### 2. 安装 MCP Server 依赖
 
 ```bash
 cd mcp-server
 npm install
-node src/index.js          # 通过 stdio 运行，等待 MCP 客户端连接
 ```
+
+> **不必手动启动 MCP Server。** Cursor、Claude Desktop 等客户端在配置好 MCP 后，会按下方配置**自动 spawn** `node …/src/index.js` 子进程，并通过 stdio 与之通信。你只需保证 Cocos 编辑器已打开且扩展在运行（第 1 步）。
 
 ### 3. 在 AI 客户端中注册
 
@@ -61,8 +62,22 @@ node src/index.js          # 通过 stdio 运行，等待 MCP 客户端连接
 
 - 把 `<本仓库路径>` 替换为你 clone 本仓库后的**绝对路径**（在仓库根目录执行 `pwd` 查看），例如 `/Users/you/cocos-mcp-server`。
 - 若 GUI 客户端找不到 `node`（不加载 shell PATH，nvm 用户常见），用 `which node` 的输出替换 `"command"`，例如 `"/Users/you/.nvm/versions/node/v22.23.2/bin/node"`。
-- **Cursor**：把上面的 JSON 写入项目 `.cursor/mcp.json`，或通过 `Settings → MCP → Add new MCP server` 添加。
+- **Cursor**：把上面的 JSON 写入项目 `.cursor/mcp.json`，或通过 `Settings → MCP → Add new MCP server` 添加。保存后 Cursor 会在需要时自动启动 MCP Server，无需在终端手动运行。
 - **Claude Desktop**：写入 `claude_desktop_config.json`；VS Code 使用顶层键 `"servers"`。各客户端完整示例见 [docs/setup.md](docs/setup.md)。
+
+<details>
+<summary>（可选）手动启动 MCP Server — 仅用于调试</summary>
+
+若需单独验证 MCP Server 是否正常，可在终端运行：
+
+```bash
+cd mcp-server
+node src/index.js          # 通过 stdio 运行，等待 MCP 客户端连接
+```
+
+正常使用 AI 客户端时不需要此步骤。
+
+</details>
 
 ### 4. 让 AI 干活
 
