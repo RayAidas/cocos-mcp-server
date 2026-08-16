@@ -128,6 +128,11 @@ const handlers = {
   'scene.getSceneTree': async () => sceneRequest('execute-scene-script', { name: 'cc-mcp', method: 'getSceneTree', args: [] }),
   'scene.findNode': async (p) => sceneRequest('execute-scene-script', { name: 'cc-mcp', method: 'findNode', args: [p.pathOrUuid] }),
   'scene.listComponents': async (p) => sceneRequest('execute-scene-script', { name: 'cc-mcp', method: 'listComponents', args: [p.pathOrUuid] }),
+  'scene.createPrefab': async (p) => {
+    if (!p.uuid) throw new Error('scene.createPrefab requires a node `uuid`');
+    if (!p.url) throw new Error('scene.createPrefab requires a target `url` (e.g. db://assets/Prefabs/Foo.prefab)');
+    return sceneRequest('create-prefab', p.uuid, p.url);
+  },
 
   // -- assets -------------------------------------------------------------
   'asset.queryInfo': async (p) => assetRequest('query-asset-info', p.urlOrUuid),
@@ -164,6 +169,55 @@ const handlers = {
     return imported;
   },
   'asset.exists': async (p) => fs.existsSync(resolveProjectPath(p.path)),
+
+  // -- asset bundles ------------------------------------------------------
+  'asset.setBundle': async (p) => {
+    const urlOrUuid = p.urlOrUuid;
+    if (!urlOrUuid) throw new Error('asset.setBundle requires `urlOrUuid` (folder url or uuid)');
+    const absPath = await assetRequest('query-path', urlOrUuid);
+    if (!absPath) throw new Error('asset not found: ' + urlOrUuid);
+    if (!fs.statSync(absPath).isDirectory()) {
+      throw new Error('asset is not a folder: ' + urlOrUuid + ' (' + absPath + ')');
+    }
+    const metaPath = absPath + '.meta';
+    if (!fs.existsSync(metaPath)) throw new Error('folder .meta not found: ' + metaPath);
+    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+    meta.userData = meta.userData || {};
+    if (p.isBundle === false) {
+      // Unmark the folder as a bundle; drop bundle-specific keys so it matches a plain folder.
+      delete meta.userData.isBundle;
+      delete meta.userData.bundleName;
+      delete meta.userData.bundleConfigID;
+      delete meta.userData.priority;
+    } else {
+      meta.userData.isBundle = true;
+      if (typeof p.bundleName === 'string' && p.bundleName) meta.userData.bundleName = p.bundleName;
+      if (typeof p.priority === 'number') meta.userData.priority = p.priority;
+    }
+    const content = JSON.stringify(meta, null, 2);
+    await assetRequest('save-asset-meta', urlOrUuid, content);
+    return { urlOrUuid: urlOrUuid, metaPath: metaPath, userData: meta.userData };
+  },
+  'asset.queryBundle': async (p) => {
+    const urlOrUuid = p.urlOrUuid;
+    if (!urlOrUuid) throw new Error('asset.queryBundle requires `urlOrUuid` (folder url or uuid)');
+    const absPath = await assetRequest('query-path', urlOrUuid);
+    if (!absPath) throw new Error('asset not found: ' + urlOrUuid);
+    const metaPath = absPath + '.meta';
+    if (!fs.existsSync(metaPath)) {
+      return { urlOrUuid: urlOrUuid, isBundle: false, bundleName: null, priority: null, userData: {} };
+    }
+    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+    const ud = meta.userData || {};
+    return {
+      urlOrUuid: urlOrUuid,
+      metaPath: metaPath,
+      isBundle: !!ud.isBundle,
+      bundleName: typeof ud.bundleName === 'string' ? ud.bundleName : null,
+      priority: typeof ud.priority === 'number' ? ud.priority : null,
+      userData: ud,
+    };
+  },
 
   // -- build --------------------------------------------------------------
   'build.run': async (p) => runCliBuild(p || {}),

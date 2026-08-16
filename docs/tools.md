@@ -1,6 +1,6 @@
 # 工具清单（MCP Tools）
 
-`cocos-mcp` 共暴露 42 个 MCP 工具。下面按类别列出名称、参数与用途。参数里 `?` 表示可选。
+`cocos-mcp` 共暴露 45 个 MCP 工具。下面按类别列出名称、参数与用途。参数里 `?` 表示可选。
 
 ## 元信息
 
@@ -21,6 +21,7 @@
 | `scene_set_parent` | `parent`, `uuids[]`, `keepWorldTransform?` | 把节点挂到新父节点 |
 | `scene_duplicate_node` | `uuids[]` | 复制节点，返回新 uuid |
 | `scene_list_components` | `pathOrUuid` | 列出某节点的组件类名 |
+| `scene_create_prefab` | `uuid`, `url` | 把节点存成预制体资源；`url` 如 `db://assets/Prefabs/Player.prefab` |
 
 ## 场景 · 组件 / 属性
 
@@ -74,6 +75,8 @@ return n.name;
 | `asset_uuid_of_url` | `url` | url → uuid |
 | `asset_url_of_uuid` | `uuid` | uuid → url |
 | `asset_path_of` | `urlOrUuid` | 资源 → 磁盘绝对路径 |
+| `asset_set_bundle` | `urlOrUuid`, `isBundle`, `bundleName?`, `priority?` | 把文件夹设为/取消资源 Bundle |
+| `asset_query_bundle` | `urlOrUuid` | 查询文件夹的 Bundle 配置（bundleName/priority/userData） |
 
 ## 构建 / 预览
 

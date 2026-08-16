@@ -104,6 +104,16 @@ const tools = [
     schema: { pathOrUuid: z.string().describe('node path or uuid') },
     run: (a) => client.call('scene.listComponents', { pathOrUuid: a.pathOrUuid }),
   },
+  {
+    name: 'scene_create_prefab',
+    title: 'Create prefab from node',
+    description: "Create a prefab asset from a scene node. `uuid` is the node uuid and `url` is the target prefab asset url (e.g. 'db://assets/Prefabs/Player.prefab'). Returns the new prefab asset uuid.",
+    schema: {
+      uuid: z.string().describe('uuid of the node to convert into a prefab'),
+      url: z.string().describe("target prefab asset url, e.g. 'db://assets/Prefabs/Player.prefab'"),
+    },
+    run: (a) => client.call('scene.createPrefab', { uuid: a.uuid, url: a.url }),
+  },
 
   // ------------------------------------------------- components / properties
   {
@@ -220,6 +230,25 @@ const tools = [
   { name: 'asset_uuid_of_url', title: 'URL to UUID', description: 'Resolve an asset url to its uuid.', schema: { url: z.string() }, run: (a) => client.call('asset.queryUuid', { url: a.url }) },
   { name: 'asset_url_of_uuid', title: 'UUID to URL', description: 'Resolve an asset uuid to its url.', schema: { uuid: z.string() }, run: (a) => client.call('asset.queryUrl', { uuid: a.uuid }) },
   { name: 'asset_path_of', title: 'Asset to disk path', description: 'Resolve an asset (url/uuid) to its absolute disk path.', schema: { urlOrUuid: z.string() }, run: (a) => client.call('asset.queryPath', { urlOrUuid: a.urlOrUuid }) },
+  {
+    name: 'asset_set_bundle',
+    title: 'Configure folder as asset bundle',
+    description: "Mark a folder as an asset bundle (or unmark it). Set `isBundle` false to remove the bundle flag. Optionally set `bundleName` (defaults to the folder name) and `priority` (higher loads earlier).",
+    schema: {
+      urlOrUuid: z.string().describe('folder url (db://assets/...) or uuid'),
+      isBundle: z.boolean().describe('true to mark as a bundle, false to unmark'),
+      bundleName: optString.describe('optional custom bundle name'),
+      priority: z.number().optional().describe('optional bundle load priority'),
+    },
+    run: (a) => client.call('asset.setBundle', { urlOrUuid: a.urlOrUuid, isBundle: a.isBundle, bundleName: a.bundleName, priority: a.priority }),
+  },
+  {
+    name: 'asset_query_bundle',
+    title: 'Query asset bundle config',
+    description: "Return whether a folder is configured as an asset bundle and its config (bundleName, priority, userData).",
+    schema: { urlOrUuid: z.string().describe('folder url (db://assets/...) or uuid') },
+    run: (a) => client.call('asset.queryBundle', { urlOrUuid: a.urlOrUuid }),
+  },
 
   // ------------------------------------------------------------- build / preview
   {
