@@ -27,12 +27,29 @@ curl http://127.0.0.1:32123/health
 # {"status":"ok","service":"cc-mcp","project":"...","methods":[...]}
 ```
 
-### 端口冲突 / 自定义端口
+### 固定端口 / 多开编辑器
 
-默认 `32123`，若被占用扩展会自动顺延（最多 +20）。可显式指定：
+推荐在 **Cocos 项目根目录** 放 `.cc-mcp.json`（`install-extension.sh` 首次安装会自动创建）：
 
-- 扩展侧：在启动编辑器的 shell 里设置 `CC_MCP_PORT=32130`。
-- MCP 侧：设置 `CC_MCP_URL=http://127.0.0.1:32130`。
+```json
+{
+  "port": 32123,
+  "strictPort": true
+}
+```
+
+- `port`：本项目的 HTTP 监听端口。
+- `strictPort: true`：端口被占用时**失败**，不会自动 `+1` 顺延（避免 AI 连错项目）。
+- 未配置 `.cc-mcp.json` 且未设置 `CC_MCP_PORT` 时，仍使用默认 `32123`，并在冲突时自动尝试最多 +20 个端口（旧行为）。
+
+多开示例：项目 A 用 `32123`，项目 B 用 `32130`；在 Cursor 里为 B 增加第二个 MCP server，并设置 `CC_MCP_URL=http://127.0.0.1:32130`。
+
+也可用环境变量（需在**启动 Cocos 的终端**里 export，从 Dock 点开编辑器时通常读不到）：
+
+- 扩展侧：`CC_MCP_PORT=32130`
+- MCP 侧：`CC_MCP_URL=http://127.0.0.1:32130`
+
+模板见 `examples/cc-mcp.project.json`。
 
 ### 可选鉴权
 

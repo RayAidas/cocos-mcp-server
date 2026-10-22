@@ -42,12 +42,20 @@ else
   echo "copied: $SRC -> $DEST"
 fi
 
+MCP_CFG="$PROJECT/.cc-mcp.json"
+if [ ! -f "$MCP_CFG" ]; then
+  cp "$SCRIPT_DIR/../examples/cc-mcp.project.json" "$MCP_CFG"
+  echo "created: $MCP_CFG (fixed port 32123, strictPort)"
+else
+  echo "keep existing: $MCP_CFG"
+fi
+
 cat <<'EOF'
 
 Next steps:
   1. In Cocos Creator, open the project.
   2. Menu: Extension -> Extension Manager -> reload (or restart the editor).
-  3. The extension starts an HTTP JSON-RPC endpoint at http://127.0.0.1:32123/rpc
-     (check http://127.0.0.1:32123/health in a browser).
+  3. The extension reads .cc-mcp.json in the project root (default port 32123, strictPort).
+     Check http://127.0.0.1:32123/health — if the port differs, see the [cc-mcp] log line.
   4. Point your MCP client at the cocos-mcp server (see docs/setup.md).
 EOF

@@ -32,9 +32,11 @@ AI 客户端（Claude / Cursor / VS Code / 任何支持 MCP 的 Agent）通过 M
 ./scripts/install-extension.sh /path/to/your-cocos-project --link
 ```
 
-在 Cocos Creator 中打开项目，然后 **Extension → Extension Manager → 刷新/重载**（或重启编辑器）。扩展会监听 `http://127.0.0.1:32123`。
+在 Cocos Creator 中打开项目，然后 **Extension → Extension Manager → 刷新/重载**（或重启编辑器）。
 
-验证：浏览器打开 `http://127.0.0.1:32123/health`，应返回 JSON 项目信息。
+安装脚本会在 Cocos 项目根目录生成 **`.cc-mcp.json`**，默认固定端口 `32123`（`strictPort: true`，占用则报错而不会悄悄换端口）。多开编辑器时，每个项目设不同 `port`，并在 MCP 配置里用 `CC_MCP_URL` 指向对应地址。
+
+验证：浏览器打开 `http://127.0.0.1:32123/health`（端口以 `.cc-mcp.json` 为准），应返回 JSON 项目信息。
 
 ### 2. 安装 MCP Server 依赖
 

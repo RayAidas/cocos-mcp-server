@@ -448,13 +448,56 @@ async function handleRequest(req, res) {
   }
 }
 
+function readProjectMcpConfig() {
+  if (!Editor || !Editor.Project || !Editor.Project.path) return {};
+  const configPath = path.join(Editor.Project.path, '.cc-mcp.json');
+  try {
+    if (fs.existsSync(configPath)) {
+      const data = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      if (data && typeof data === 'object') return data;
+    }
+  } catch (e) {
+    console.warn('[cc-mcp] invalid .cc-mcp.json:', e.message);
+  }
+  return {};
+}
+
+/** Port: CC_MCP_PORT env > .cc-mcp.json `port` > default. strictPort stops auto +1 on conflict. */
+function resolveListenOptions() {
+  const fileCfg = readProjectMcpConfig();
+  const envPort = process.env.CC_MCP_PORT;
+  const hasExplicitPort =
+    (envPort != null && envPort !== '') || fileCfg.port != null;
+
+  let startPort = DEFAULT_PORT;
+  if (envPort != null && envPort !== '') {
+    startPort = parseInt(envPort, 10);
+  } else if (fileCfg.port != null) {
+    startPort = parseInt(String(fileCfg.port), 10);
+  }
+  if (isNaN(startPort)) startPort = DEFAULT_PORT;
+
+  let strictPort = fileCfg.strictPort;
+  if (strictPort === undefined) strictPort = hasExplicitPort;
+
+  const maxAttempts = strictPort ? 1 : 20;
+  return { startPort, maxAttempts, strictPort };
+}
+
 function startServer() {
+  const { startPort, maxAttempts, strictPort } = resolveListenOptions();
   return new Promise((resolve, reject) => {
     const tryPort = (port, attemptsLeft) => {
       const s = http.createServer(handleRequest);
       s.once('error', (err) => {
         if (err.code === 'EADDRINUSE' && attemptsLeft > 0) {
           tryPort(port + 1, attemptsLeft - 1);
+        } else if (err.code === 'EADDRINUSE' && strictPort) {
+          reject(
+            new Error(
+              'port ' + port + ' is already in use (strictPort). Change `port` in .cc-mcp.json or set CC_MCP_PORT.'
+            )
+          );
         } else {
           reject(err);
         }
@@ -465,8 +508,7 @@ function startServer() {
         resolve(port);
       });
     };
-    const start = parseInt(process.env.CC_MCP_PORT || String(DEFAULT_PORT), 10);
-    tryPort(isNaN(start) ? DEFAULT_PORT : start, 20);
+    tryPort(startPort, maxAttempts);
   });
 }
 
